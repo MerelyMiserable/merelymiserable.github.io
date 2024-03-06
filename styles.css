@@ -143,13 +143,15 @@ footer {
 @media (max-width: 768px) {
   .nav-links {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 80px;
     left: 0;
     width: 100%;
+    height: calc(100vh - 80px);
     background-color: #333;
     padding: 20px;
     flex-direction: column;
+    z-index: 1;
   }
 
   .nav-links a {
@@ -161,7 +163,7 @@ footer {
   }
 
   .nav-active {
-    transform: translateX(0%);
+    display: flex;
   }
 
   .toggle .line1 {
@@ -174,5 +176,24 @@ footer {
 
   .toggle .line3 {
     transform: rotate(45deg) translate(-5px, -6px);
+  }
+}
+
+@media (min-width: 769px) {
+  .nav-links {
+    display: flex;
+    position: static;
+    height: auto;
+    background-color: transparent;
+    padding: 0;
+    flex-direction: row;
+  }
+
+  .nav-links a {
+    margin-left: 20px;
+  }
+
+  .burger {
+    display: none;
   }
 }
