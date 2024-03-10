@@ -25,8 +25,8 @@ window.addEventListener('load', function() {
   let mouseX = 0;
   let mouseY = 0;
 
-  // Mouse move event
-  canvas.addEventListener('mousemove', function(e) {
+  // Mouse move event on document
+  document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
   });
