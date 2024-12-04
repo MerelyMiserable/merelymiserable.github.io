@@ -2,49 +2,59 @@ window.addEventListener('load', function() {
   const canvas = document.getElementById('background-canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
 
   let dots = [];
-  const maxDots = 200; // Maximum number of dots
-  const maxDistance = 200;
+  const maxDots = 250; 
+  const maxDistance = 150; 
   const dotRadius = 2;
-  const mouseRadius = 100;
+  const mouseRadius = 150;
+  const colors = [
+    'rgba(52, 152, 219, 0.5)',   // Blue
+    'rgba(46, 204, 113, 0.5)',   // Green
+    'rgba(231, 76, 60, 0.5)',    // Red
+    'rgba(241, 196, 15, 0.5)'    // Yellow
+  ];
 
-  // Calculate the number of dots based on screen resolution
   const screenArea = canvas.width * canvas.height;
-  const numDots = Math.min(maxDots, Math.floor(screenArea / 5000));
+  const numDots = Math.min(maxDots, Math.floor(screenArea / 4000));
 
-  // Create dots
+  // Create dots with random colors and drift speeds
   for (let i = 0; i < numDots; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    dots.push({ x, y });
+    const dx = (Math.random() - 0.5) * 0.5; // Random small speed in x-direction
+    const dy = (Math.random() - 0.5) * 0.5; // Random small speed in y-direction
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    dots.push({ x, y, dx, dy, color });
   }
 
   let mouseX = 0;
   let mouseY = 0;
 
-  // Mouse move event on document
   document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
   });
 
-  // Draw background
   function drawBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw dots
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    // Draw dots with varying colors
     dots.forEach(dot => {
+      ctx.fillStyle = dot.color;
       ctx.beginPath();
       ctx.arc(dot.x, dot.y, dotRadius, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // Draw connections
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    // Enhanced connection drawing
     for (let i = 0; i < dots.length; i++) {
       for (let j = i + 1; j < dots.length; j++) {
         const dx = dots[i].x - dots[j].x;
@@ -54,12 +64,17 @@ window.addEventListener('load', function() {
         if (distance < maxDistance) {
           const distanceToMouse1 = Math.sqrt((dots[i].x - mouseX) ** 2 + (dots[i].y - mouseY) ** 2);
           const distanceToMouse2 = Math.sqrt((dots[j].x - mouseX) ** 2 + (dots[j].y - mouseY) ** 2);
-          const lineWidth = 1 - (distance / maxDistance);
-
+          
+          // Gradient line based on distance
+          const gradient = ctx.createLinearGradient(dots[i].x, dots[i].y, dots[j].x, dots[j].y);
+          gradient.addColorStop(0, dots[i].color);
+          gradient.addColorStop(1, dots[j].color);
+          
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 1 - (distance / maxDistance);
+          
           if (distanceToMouse1 < mouseRadius || distanceToMouse2 < mouseRadius) {
-            ctx.lineWidth = lineWidth * 2;
-          } else {
-            ctx.lineWidth = lineWidth;
+            ctx.lineWidth *= 2;
           }
 
           ctx.beginPath();
@@ -70,25 +85,24 @@ window.addEventListener('load', function() {
       }
     }
 
-    // Move dots
+    // Dot movement and random drift
     dots.forEach(dot => {
       const distanceToMouse = Math.sqrt((dot.x - mouseX) ** 2 + (dot.y - mouseY) ** 2);
       const repulsionFactor = (mouseRadius - distanceToMouse) / mouseRadius;
 
       if (distanceToMouse < mouseRadius) {
         const angle = Math.atan2(dot.y - mouseY, dot.x - mouseX);
-        dot.x += Math.cos(angle) * repulsionFactor * 5;
-        dot.y += Math.sin(angle) * repulsionFactor * 5;
+        dot.x += Math.cos(angle) * repulsionFactor * 7;
+        dot.y += Math.sin(angle) * repulsionFactor * 7;
       } else {
-        dot.x += (Math.random() * 2 - 1) * 2;
-        dot.y += (Math.random() * 2 - 1) * 2;
+        // Add random drift to movement
+        dot.x += dot.dx + (Math.random() - 0.5) * 0.2;
+        dot.y += dot.dy + (Math.random() - 0.5) * 0.2;
       }
 
-      // Wrap dots around the edges
-      if (dot.x < 0) dot.x = canvas.width;
-      if (dot.x > canvas.width) dot.x = 0;
-      if (dot.y < 0) dot.y = canvas.height;
-      if (dot.y > canvas.height) dot.y = 0;
+      // Wrap dots around edges
+      dot.x = (dot.x + canvas.width) % canvas.width;
+      dot.y = (dot.y + canvas.height) % canvas.height;
     });
 
     requestAnimationFrame(drawBackground);
