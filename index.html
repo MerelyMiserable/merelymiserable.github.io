@@ -3,92 +3,859 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MerelyMiserable - C# Indie Dev Portfolio</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <title>MerelyMiserable</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+      overflow: hidden;
+      background: #000000;
+      cursor: default;
+      user-select: none;
+    }
+
+    #background-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .desktop {
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 28px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1;
+    }
+
+    .icon {
+      width: 90px;
+      text-align: center;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .icon:hover {
+      background: rgba(138, 43, 226, 0.3);
+      outline: 1px dotted rgba(138, 43, 226, 0.8);
+    }
+
+    .icon img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      image-rendering: pixelated;
+    }
+
+    .icon-label {
+      color: white;
+      font-size: 11px;
+      text-shadow: 1px 1px 2px black;
+      word-wrap: break-word;
+    }
+
+    .window {
+      position: absolute;
+      background: #1a1a1a;
+      border: 2px solid #8b2be2;
+      box-shadow: 4px 4px 0px rgba(139, 43, 226, 0.3);
+      min-width: 500px;
+      max-width: 700px;
+      display: none;
+      z-index: 100;
+    }
+
+    .window.active {
+      display: block;
+    }
+
+    .window-titlebar {
+      background: linear-gradient(180deg, #4b0082 0%, #2d004f 100%);
+      padding: 4px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      border-bottom: 2px solid #8b2be2;
+    }
+
+    .window-title {
+      color: #ffffff;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      text-shadow: 1px 1px 0px #000;
+    }
+
+    .window-title img {
+      width: 16px;
+      height: 16px;
+      image-rendering: pixelated;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 4px;
+    }
+
+    .window-button {
+      width: 16px;
+      height: 14px;
+      background: #2d2d2d;
+      border: 1px solid;
+      border-color: #555 #111 #111 #555;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .window-button:hover {
+      background: #3d3d3d;
+    }
+
+    .window-button:active {
+      border-color: #111 #555 #555 #111;
+    }
+
+    .window-content {
+      padding: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #e0e0e0;
+      background: #1a1a1a;
+    }
+
+    .window-content h2 {
+      margin-bottom: 12px;
+      color: #8b2be2;
+      font-size: 16px;
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+    }
+
+    .window-content a {
+      color: #a78bfa;
+      text-decoration: none;
+      border-bottom: 1px solid #a78bfa;
+    }
+
+    .window-content a:hover {
+      color: #c4b5fd;
+      border-bottom-color: #c4b5fd;
+    }
+
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: #1a1a1a;
+      border-top: 2px solid #8b2be2;
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      z-index: 1000;
+      gap: 4px;
+    }
+
+    .start-button {
+      background: linear-gradient(180deg, #4b0082 0%, #2d004f 100%);
+      border: 1px solid;
+      border-color: #8b2be2 #2d004f #2d004f #8b2be2;
+      padding: 3px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      color: #ffffff;
+      font-weight: bold;
+      text-shadow: 1px 1px 0px #000;
+      height: 22px;
+      display: flex;
+      align-items: center;
+    }
+
+    .start-button:hover {
+      background: linear-gradient(180deg, #5b1092 0%, #3d105f 100%);
+    }
+
+    .start-button:active {
+      border-color: #2d004f #8b2be2 #8b2be2 #2d004f;
+    }
+
+    .taskbar-divider {
+      width: 2px;
+      height: 22px;
+      background: #2d004f;
+      border-right: 1px solid #4b0082;
+    }
+
+    .taskbar-apps {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .taskbar-app {
+      background: #2d2d2d;
+      border: 1px solid;
+      border-color: #555 #111 #111 #555;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-size: 11px;
+      color: #e0e0e0;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .taskbar-app:hover {
+      background: #3d3d3d;
+    }
+
+    .taskbar-app.active-window {
+      border-color: #111 #555 #555 #111;
+      background: #1a1a1a;
+    }
+
+    .taskbar-app img {
+      width: 14px;
+      height: 14px;
+      image-rendering: pixelated;
+    }
+
+    .status-area {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .discord-status {
+      font-size: 10px;
+      color: #8b2be2;
+      padding: 2px 8px;
+      background: #2d2d2d;
+      border: 1px solid;
+      border-color: #555 #111 #111 #555;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3ba55c;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .clock {
+      background: #2d2d2d;
+      border: 1px solid;
+      border-color: #555 #111 #111 #555;
+      padding: 3px 8px;
+      color: #8b2be2;
+      font-size: 11px;
+      font-weight: bold;
+      height: 22px;
+      display: flex;
+      align-items: center;
+    }
+
+    .start-menu {
+      position: fixed;
+      bottom: 30px;
+      left: 4px;
+      width: 280px;
+      background: #1a1a1a;
+      border: 2px solid #8b2be2;
+      box-shadow: 4px 4px 0px rgba(139, 43, 226, 0.3);
+      display: none;
+      z-index: 2000;
+    }
+
+    .start-menu.active {
+      display: block;
+    }
+
+    .start-menu-header {
+      background: linear-gradient(180deg, #4b0082 0%, #2d004f 100%);
+      padding: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 2px solid #8b2be2;
+    }
+
+    .start-menu-header img {
+      width: 48px;
+      height: 48px;
+      border: 2px solid #8b2be2;
+      image-rendering: auto;
+    }
+
+    .start-menu-user {
+      font-size: 13px;
+      font-weight: bold;
+      text-shadow: 1px 1px 0px #000;
+    }
+
+    .start-menu-items {
+      padding: 4px 0;
+    }
+
+    .start-menu-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e0e0e0;
+    }
+
+    .start-menu-item:hover {
+      background: #2d004f;
+      color: #fff;
+    }
+
+    .start-menu-separator {
+      height: 2px;
+      background: #2d004f;
+      margin: 4px 8px;
+    }
+
+    .private-badge {
+      background: #dc2626;
+      color: white;
+      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: bold;
+      margin-left: 8px;
+      border: 1px solid #991b1b;
+    }
+
+    .project-image {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      margin: 12px 0;
+      border: 2px solid #8b2be2;
+    }
+
+    .system-tray-icon {
+      width: 16px;
+      height: 16px;
+      margin: 0 2px;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    .system-tray-icon:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .desktop {
+        padding: 10px;
+        height: calc(100vh - 56px);
+      }
+      
+      .window {
+        min-width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        left: 10px !important;
+        top: 10px !important;
+      }
+
+      .start-menu {
+        width: calc(100vw - 20px);
+        left: 10px;
+      }
+
+      .discord-status {
+        display: none;
+      }
+
+      .taskbar {
+        height: 56px;
+        flex-wrap: wrap;
+      }
+
+      .taskbar-apps {
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4b0082;
+      border: 2px solid #2d004f;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5b1092;
+    }
+
+    ::-webkit-scrollbar-button {
+      background: #2d2d2d;
+      border: 1px solid;
+      border-color: #555 #111 #111 #555;
+      height: 16px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <nav>
-      <div class="logo">MereMisery</div>
-      <div class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
+  <canvas id="background-canvas"></canvas>
+  
+  <div class="desktop" id="desktop">
+    <!-- Desktop icons will be generated here -->
+  </div>
+
+  <div class="taskbar">
+    <div class="start-button" id="startBtn">START</div>
+    <div class="taskbar-divider"></div>
+    <div class="taskbar-apps" id="taskbarApps"></div>
+    <div class="status-area">
+      <div class="discord-status">
+        <span class="status-dot"></span>
+        <span>Online</span>
       </div>
-      <div class="burger">
-        <div class="line1"></div>
-        <div class="line2"></div>
-        <div class="line3"></div>
-      </div>
-    </nav>
-  </header>
-  <!-- Main Content -->
-  <main>
-    <!-- Home Section -->
-    <canvas id="background-canvas"></canvas>
-    <section id="home">
-      <div class="hero-text">
-        <h1>MerelyMiserable</h1>
-        <p>C# Indie Dev</p>
-        <a href="#projects" class="btn">View Projects</a>
-      </div>
-    </section>
-    <!-- About Section -->
-    <section id="about">
-      <h2>About Me</h2>
-      <p>I am a programmer with experience in Unity game development, aswell as javascript, java, c++, python and lua. I have some experience in VR development with Unity as well. My most
-        extensive experience comes from modding games, which has given me an understanding of game mechanics and
-        performance optimization. I have a keen eye for detail, and I ensure that all aspects of my work are thoroughly
-        tested and user-friendly. I'm passionate about delivering quality work and working collaboratively with clients
-        to achieve their goals.</p>
-    </section>
-    <!-- Work History Section -->
-    <section id="work-history">
-      <!-- Add more job entries as needed -->
-    </section>
-    <!-- Projects Section -->
-    <section id="projects">
-      <h2>My Projects</h2>
-      <div class="project-grid">
-        <div class="project">
-          <img src="https://steamuserimages-a.akamaihd.net/ugc/1700658941933272921/ECE820E32787E444D468812D3C648511F2EC25F1/?imw=268&imh=268&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true" alt="Overdose V2">
-          <h3>Overdose V2</h3>
-          <p>Discontinued PPG Mod.</p>
-          <a href="https://github.com/MerelyMiserable/Overdose-V2" class="btn">Learn More</a>
-        </div>
-        <div class="project">
-          <img src="https://steamuserimages-a.akamaihd.net/ugc/1700658941936678855/0070E14DEB9B0D803899BDCDB922FBE787CD55D7/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="Overdose Legacy">
-          <h3>Overdose Legacy</h3>
-          <p>Old Discontinued PPG Mod</p>
-          <a href="https://github.com/MerelyMiserable/Overdose-Legacy" class="btn">Learn More</a>
-        </div>
-        <div class="project">
-          <img src="https://cdn.builtbybit.com/carousel_images/1710/1710541-aac899f2b14d70934eb604fffc46db09.jpg" alt="WayHome Plugin">
-          <h3>WayHome Plugin</h3>
-          <p>Custom Minecraft teleportation plugin featuring personal waystones with a unique model and textures by boogeyoogie on discord.</p>
-          <a href="https://builtbybit.com/resources/wayhome.58764/" class="btn">Purchase ($5-$10)</a>
-        </div>
-        <div class="project private">
-          <img src="https://raw.githubusercontent.com/MerelyMiserable/merelymiserable.github.io/refs/heads/main/att.png" alt="Township Puppeteer">
-          <i class="fas fa-lock"></i>
-          <h3>Township Puppeteer</h3>
-          <p>Private Client for A Township Tale.</p>
-        </div>
-      </div>
-    </section>
-  </main>
-  <!-- Footer -->
-  <footer>
-    <div class="social-links">
-      <a href="https://twitter.com/merelymisery"><i class="fab fa-twitter"></i></a>
-      <a href="https://github.com/merelymiserable"><i class="fab fa-github"></i></a>
-      <a href="https://discord.gg/hW9Dqe52ut"><i class="fab fa-discord"></i></a>
+      <div class="clock" id="clock">12:00 AM</div>
     </div>
-    <p>&copy; MereMisery. All rights reserved.</p>
-  </footer>
-  <script src="script.js"></script>
-  <script src="background.js"></script>
+  </div>
+
+  <div class="start-menu" id="startMenu">
+    <div class="start-menu-header">
+      <img src="https://avatars.githubusercontent.com/u/77551307?v=4" alt="Profile">
+      <div class="start-menu-user">MerelyMiserable</div>
+    </div>
+    <div class="start-menu-items">
+      <div class="start-menu-item" data-window="about">
+        <span>📝</span> About Me
+      </div>
+      <div class="start-menu-item" data-window="contact">
+        <span>📧</span> Contact
+      </div>
+      <div class="start-menu-separator"></div>
+      <div class="start-menu-item" onclick="window.open('https://github.com/merelymiserable', '_blank')">
+        <span>🔗</span> GitHub
+      </div>
+      <div class="start-menu-item" onclick="window.open('https://twitter.com/merelymisery', '_blank')">
+        <span>🔗</span> Twitter
+      </div>
+      <div class="start-menu-item" onclick="window.open('https://discord.gg/hW9Dqe52ut', '_blank')">
+        <span>🔗</span> Discord
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration - Edit your projects here
+    const PROJECTS = [
+      {
+        id: 'merelycapes',
+        name: 'MerelyCapes',
+        icon: 'https://raw.githubusercontent.com/Mojang/bedrock-samples/refs/heads/main/resource_pack/textures/ui/sidebar_icons/capes.png',
+        description: 'Proxy-based cape injection',
+        content: `<h2>MerelyCapes</h2>
+          <p>A system to inject custom capes into Minecraft Bedrock that show up in-game to other players and in menus without modifying any code - just pure proxy magic.</p>
+          <p><a href="https://github.com/MerelyMiserable/MerelyCapes" target="_blank">View on GitHub</a></p>`
+      },
+      {
+        id: 'overdose-v2',
+        name: 'Overdose V2',
+        icon: 'https://steamuserimages-a.akamaihd.net/ugc/1700658941933272921/ECE820E32787E444D468812D3C648511F2EC25F1/',
+        description: 'PPG Mod',
+        content: `<h2>Overdose V2</h2>
+          <img class="project-image" src="https://steamuserimages-a.akamaihd.net/ugc/1700658941933272921/ECE820E32787E444D468812D3C648511F2EC25F1/" alt="Overdose V2">
+          <p>Discontinued People Playground mod.</p>
+          <p><a href="https://github.com/MerelyMiserable/Overdose-V2" target="_blank">View on GitHub</a></p>`
+      },
+      {
+        id: 'wayhome',
+        name: 'WayHome',
+        icon: 'https://cdn.builtbybit.com/carousel_images/1710/1710541-aac899f2b14d70934eb604fffc46db09.jpg',
+        description: 'Minecraft Plugin',
+        content: `<h2>WayHome Plugin</h2>
+          <img class="project-image" src="https://cdn.builtbybit.com/carousel_images/1710/1710541-aac899f2b14d70934eb604fffc46db09.jpg" alt="WayHome">
+          <p>Custom Minecraft teleportation plugin featuring personal waystones with unique models and textures.</p>
+          <p><a href="https://builtbybit.com/resources/wayhome.58764/" target="_blank">Purchase ($5-$10)</a></p>`
+      },
+      {
+        id: 'township',
+        name: 'Township Puppeteer',
+        icon: 'https://raw.githubusercontent.com/MerelyMiserable/merelymiserable.github.io/refs/heads/main/att.png',
+        description: 'Private Project',
+        private: true,
+        content: `<h2>Township Puppeteer <span class="private-badge">PRIVATE</span></h2>
+          <p>Private client for A Township Tale.</p>
+          <p>This project is not publicly available.</p>`
+      }
+    ];
+
+    let openWindows = {};
+
+    // Desktop icons
+    const desktop = document.getElementById('desktop');
+    PROJECTS.forEach(project => {
+      const icon = document.createElement('div');
+      icon.className = 'icon';
+      icon.innerHTML = `
+        <img src="${project.icon}" alt="${project.name}">
+        <div class="icon-label">${project.name}</div>
+      `;
+      icon.addEventListener('dblclick', () => openWindow(project.id));
+      desktop.appendChild(icon);
+    });
+
+    // Create windows
+    PROJECTS.forEach(project => {
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.id = `window-${project.id}`;
+      win.style.left = `${100 + Math.random() * 200}px`;
+      win.style.top = `${50 + Math.random() * 100}px`;
+      
+      win.innerHTML = `
+        <div class="window-titlebar">
+          <div class="window-title">
+            <img src="${project.icon}" alt="${project.name}">
+            <span>${project.name}</span>
+          </div>
+          <div class="window-controls">
+            <div class="window-button" onclick="closeWindow('${project.id}')">×</div>
+          </div>
+        </div>
+        <div class="window-content">
+          ${project.content}
+        </div>
+      `;
+      
+      document.body.appendChild(win);
+      makeDraggable(win);
+    });
+
+    // About window
+    const aboutWin = document.createElement('div');
+    aboutWin.className = 'window';
+    aboutWin.id = 'window-about';
+    aboutWin.style.left = '150px';
+    aboutWin.style.top = '80px';
+    aboutWin.innerHTML = `
+      <div class="window-titlebar">
+        <div class="window-title">
+          <span>📝</span>
+          <span>About Me</span>
+        </div>
+        <div class="window-controls">
+          <div class="window-button" onclick="closeWindow('about')">×</div>
+        </div>
+      </div>
+      <div class="window-content">
+        <h2>MerelyMiserable</h2>
+        <p>Developer & Security Researcher</p>
+        <p style="margin-top: 15px;">I break things. Reverse engineering, modding, and finding vulnerabilities in APIs and games. Been coding since I was 7 - everything from game mods to security tools.</p>
+        <p style="margin-top: 10px;"><strong>Current focus:</strong> C++, C#, cybersecurity research</p>
+        <p style="margin-top: 10px;"><strong>I hate reading Assembly.</strong></p>
+      </div>
+    `;
+    document.body.appendChild(aboutWin);
+    makeDraggable(aboutWin);
+
+    // Contact window
+    const contactWin = document.createElement('div');
+    contactWin.className = 'window';
+    contactWin.id = 'window-contact';
+    contactWin.style.left = '180px';
+    contactWin.style.top = '110px';
+    contactWin.innerHTML = `
+      <div class="window-titlebar">
+        <div class="window-title">
+          <span>📧</span>
+          <span>Contact</span>
+        </div>
+        <div class="window-controls">
+          <div class="window-button" onclick="closeWindow('contact')">×</div>
+        </div>
+      </div>
+      <div class="window-content">
+        <h2>Get in touch</h2>
+        <p><a href="https://github.com/merelymiserable" target="_blank">GitHub: @merelymiserable</a></p>
+        <p><a href="https://twitter.com/merelymisery" target="_blank">Twitter: @merelymisery</a></p>
+        <p><a href="https://discord.gg/hW9Dqe52ut" target="_blank">Discord Server</a></p>
+      </div>
+    `;
+    document.body.appendChild(contactWin);
+    makeDraggable(contactWin);
+
+    // Window management
+    function openWindow(id) {
+      const win = document.getElementById(`window-${id}`);
+      if (win) {
+        win.classList.add('active');
+        openWindows[id] = true;
+        updateTaskbar();
+      }
+    }
+
+    function closeWindow(id) {
+      const win = document.getElementById(`window-${id}`);
+      if (win) {
+        win.classList.remove('active');
+        delete openWindows[id];
+        updateTaskbar();
+      }
+    }
+
+    function updateTaskbar() {
+      const taskbarApps = document.getElementById('taskbarApps');
+      taskbarApps.innerHTML = '';
+      
+      Object.keys(openWindows).forEach(id => {
+        const project = PROJECTS.find(p => p.id === id);
+        
+        let displayName = project ? project.name : id;
+        let displayIcon = project ? project.icon : '📝';
+        
+        if (id === 'about') { displayName = 'About Me'; displayIcon = '📝'; }
+        if (id === 'contact') { displayName = 'Contact'; displayIcon = '📧'; }
+        
+        const app = document.createElement('div');
+        app.className = 'taskbar-app active-window';
+        
+        if (typeof displayIcon === 'string' && displayIcon.startsWith('http')) {
+          app.innerHTML = `<img src="${displayIcon}" alt="${displayName}"><span>${displayName}</span>`;
+        } else {
+          app.innerHTML = `<span>${displayIcon}</span><span>${displayName}</span>`;
+        }
+        
+        app.addEventListener('click', () => {
+          const win = document.getElementById(`window-${id}`);
+          if (win) {
+            if (win.classList.contains('active')) {
+              win.classList.remove('active');
+              delete openWindows[id];
+            } else {
+              win.classList.add('active');
+              openWindows[id] = true;
+            }
+            updateTaskbar();
+          }
+        });
+        
+        taskbarApps.appendChild(app);
+      });
+    }
+
+    function makeDraggable(element) {
+      const titlebar = element.querySelector('.window-titlebar');
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      
+      titlebar.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    // Start menu
+    const startBtn = document.getElementById('startBtn');
+    const startMenu = document.getElementById('startMenu');
+    
+    startBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startMenu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+      startMenu.classList.remove('active');
+    });
+
+    startMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    document.querySelectorAll('.start-menu-item[data-window]').forEach(item => {
+      item.addEventListener('click', () => {
+        openWindow(item.dataset.window);
+        startMenu.classList.remove('active');
+      });
+    });
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours() % 12 || 12;
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      document.getElementById('clock').textContent = `${hours}:${minutes} ${ampm}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Background effect
+    const canvas = document.getElementById('background-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initDots();
+    }
+    
+    let dots = [];
+    const maxDistance = 150;
+    const dotRadius = 2;
+    const mouseRadius = 150;
+    const colors = [
+      'rgba(138, 43, 226, 0.6)',
+      'rgba(75, 0, 130, 0.6)',
+      'rgba(148, 0, 211, 0.6)',
+      'rgba(186, 85, 211, 0.6)'
+    ];
+
+    function initDots() {
+      dots = [];
+      const area = canvas.width * canvas.height;
+      const numDots = Math.min(200, Math.floor(area / 5000));
+      
+      for (let i = 0; i < numDots; i++) {
+        dots.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          dx: (Math.random() - 0.5) * 0.5,
+          dy: (Math.random() - 0.5) * 0.5,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    let mouseX = 0;
+    let mouseY = 0;
+    document.addEventListener('mousemove', function(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function drawBackground() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      dots.forEach(dot => {
+        ctx.fillStyle = dot.color;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = dots[i].x - dots[j].x;
+          const dy = dots[i].y - dots[j].y;
+          
+          if (Math.abs(dx) > maxDistance || Math.abs(dy) > maxDistance) continue;
+          
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < maxDistance) {
+            const distanceToMouse1 = Math.sqrt((dots[i].x - mouseX) ** 2 + (dots[i].y - mouseY) ** 2);
+            const distanceToMouse2 = Math.sqrt((dots[j].x - mouseX) ** 2 + (dots[j].y - mouseY) ** 2);
+            
+            ctx.strokeStyle = dots[i].color;
+            ctx.lineWidth = 1 - (distance / maxDistance);
+            
+            if (distanceToMouse1 < mouseRadius || distanceToMouse2 < mouseRadius) {
+              ctx.lineWidth *= 1.5;
+            }
+            ctx.beginPath();
+            ctx.moveTo(dots[i].x, dots[i].y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      dots.forEach(dot => {
+        const distanceToMouse = Math.sqrt((dot.x - mouseX) ** 2 + (dot.y - mouseY) ** 2);
+        const repulsionFactor = (mouseRadius - distanceToMouse) / mouseRadius;
+        
+        if (distanceToMouse < mouseRadius) {
+          const angle = Math.atan2(dot.y - mouseY, dot.x - mouseX);
+          dot.x += Math.cos(angle) * repulsionFactor * 5;
+          dot.y += Math.sin(angle) * repulsionFactor * 5;
+        } else {
+          dot.x += dot.dx;
+          dot.y += dot.dy;
+        }
+
+        dot.x = (dot.x + canvas.width) % canvas.width;
+        dot.y = (dot.y + canvas.height) % canvas.height;
+      });
+
+      requestAnimationFrame(drawBackground);
+    }
+
+    drawBackground();
+  </script>
 </body>
 </html>
